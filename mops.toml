@@ -1,0 +1,16 @@
+[package]
+name = "backup"
+version = "1.0.0"
+description = "On-chain backup/restore system"
+repository = "https://github.com/ZenVoich/backup"
+keywords = [ "backup", "restore", "recovery", "auto-backup" ]
+license = "MIT"
+
+[dependencies]
+base = "0.9.7"
+motoko-datetime = "https://github.com/ByronBecker/motoko-datetime#v0.1.1"
+linked-list = "0.1.0"
+map = "8.1.0"
+
+[dev-dependencies]
+test = "1.0.1"
