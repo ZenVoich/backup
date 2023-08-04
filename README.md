@@ -84,3 +84,18 @@ public shared ({caller}) func restore(backupId : Nat, chunkIndex : Nat) : async 
 4. Call `dfx canister call <canister> restore`
 5. Return `assert(false);` to `restore` method
 3. Deploy your canister
+
+## Caveats
+
+If you reinstall your canister, new backup canister will be created.
+
+If you want to reinstall your canister and reuse existing backup canister:
+
+replace
+```motoko
+let backupState = Backup.init(null);
+```
+with
+```motoko
+let backupState = Backup.init(?Principal.fromText("<backup-canister-id>"));
+```
