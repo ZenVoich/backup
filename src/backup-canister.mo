@@ -18,6 +18,7 @@ import Prim "mo:prim";
 import DateTime "mo:motoko-datetime/DateTime";
 import LinkedList "mo:linked-list";
 import Map "mo:map/Map";
+import HttpTypes "mo:http-types";
 
 actor class BackupCanister(whitelist : [Principal]) {
 	type BackupId = Nat;
@@ -229,22 +230,7 @@ actor class BackupCanister(whitelist : [Principal]) {
 		};
 	};
 
-	public type HeaderField = (Text, Text);
-
-	public type HttpRequest = {
-		url : Text;
-		method : Text;
-		body : Blob;
-		headers : [HeaderField];
-	};
-
-	public type HttpResponse = {
-		body : Blob;
-		headers : [HeaderField];
-		status_code : Nat16;
-	};
-
-	public query func http_request(request : HttpRequest) : async HttpResponse {
+	public query func http_request(request : HttpTypes.Request) : async HttpTypes.Response {
 		var body = "";
 		body #= "Total backups:\t\t" # Nat.toText(Map.size(backups)) # "\n\n";
 		body #= "Total size:\t\t" # formatSize(totalSize, ["b", "B"]) # "\n\n";
@@ -269,6 +255,8 @@ actor class BackupCanister(whitelist : [Principal]) {
 			status_code = 200;
 			headers = [];
 			body = Text.encodeUtf8(body);
+			streaming_strategy = null;
+			upgrade = null;
 		};
 	};
 };
