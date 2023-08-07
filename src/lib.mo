@@ -29,6 +29,8 @@ module {
 	};
 
 	public class BackupManager(state : State) {
+		var timerId = 0;
+
 		func _ensureBackupCanister() : async () {
 			switch (state) {
 				case (#v1(data)) {
@@ -68,9 +70,10 @@ module {
 			actor(Principal.toText(canisterId)) : BackupCanister.BackupCanister;
 		};
 
-		public func setTimer(duration : Duration, backupFn : () -> async ()) : Nat {
+		public func setTimer(duration : Duration, backupFn : () -> async ()) {
 			var backupInProgress = false;
-			Timer.recurringTimer(#nanoseconds(_toNanos(duration)), func() : async () {
+			cancelTimer();
+			timerId := Timer.recurringTimer(#nanoseconds(_toNanos(duration)), func() : async () {
 				if (backupInProgress) {
 					return;
 				};
@@ -80,6 +83,10 @@ module {
 				} catch (_) {};
 				backupInProgress := false;
 			});
+		};
+
+		public func cancelTimer() {
+			Timer.cancelTimer(timerId);
 		};
 
 		public func restore(backupId : Nat, restoreChunk : (Blob) -> ()) : async () {

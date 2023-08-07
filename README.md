@@ -48,7 +48,7 @@ func _backup() : async () {
 };
 
 // automatically backup every hour
-ignore backupManager.setTimer(#hours(1), _backup);
+backupManager.setTimer(#hours(1), _backup); // also add this line to postupgrade
 
 // restore a backup
 public shared ({caller}) func restore(backupId : Nat, chunkIndex : Nat) : async () {
