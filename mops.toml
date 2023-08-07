@@ -1,6 +1,6 @@
 [package]
 name = "backup"
-version = "1.0.0"
+version = "1.1.0"
 description = "On-chain backup/restore system"
 repository = "https://github.com/ZenVoich/backup"
 keywords = [ "backup", "restore", "recovery", "auto-backup" ]
