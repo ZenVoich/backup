@@ -197,6 +197,11 @@ actor class BackupCanister(whitelist : [Principal]) {
 		Int.toText(dur / 1_000_000_000) # " s";
 	};
 
+	func addGap(text : Text, sizeInTabs : Nat) : Text {
+		let suffixSize : Nat = sizeInTabs - Nat.min(sizeInTabs, text.size() / 8);
+		text # Text.fromIter(Array.init<Char>(suffixSize, '\t').vals());
+	};
+
 	func formatSize(size : Nat, suffixes : [Text]) : Text {
 		func _format(div : Nat, suffix : Text) : Text {
 			let q = size / div;
@@ -206,7 +211,7 @@ actor class BackupCanister(whitelist : [Principal]) {
 			Nat.toText(q) # "." # Char.toText(rChars[0]) # Char.toText(rChars[1]) # suffix;
 		};
 
-		let res = if (size < 1024) {
+		if (size < 1024) {
 			Nat.toText(size) # " " #suffixes[0];
 		}
 		else if (size < 1024 ** 2) {
@@ -221,13 +226,6 @@ actor class BackupCanister(whitelist : [Principal]) {
 		else {
 			_format(1024 ** 4, " T" # suffixes[1]);
 		};
-
-		if (res.size() < 8) {
-			res # "\t";
-		}
-		else {
-			res;
-		};
 	};
 
 	public query func http_request(request : HttpTypes.Request) : async HttpTypes.Response {
@@ -237,16 +235,16 @@ actor class BackupCanister(whitelist : [Principal]) {
 		body #= "Allocated memory:\t" # formatSize(Prim.rts_memory_size(), ["b", "B"]) # "\n\n";
 		body #= "Cycles balance:\t\t" # formatSize(ExperimentalCycles.balance(), ["cycles", "C"]) # "\n\n";
 		body #= "\n\n\n";
-		body #= "ID\t\tStart Time\t\t\tSize\t\tDuration\tChunks\t\tBiggest Chunk\t\tTag\n";
+		body #= addGap("ID", 2) # addGap("Start Time", 4) # addGap("Size", 2) # addGap("Duration", 2) # addGap("Chunks", 2) # addGap("Biggest Chunk", 3) # "Tag\n";
 		body #= "----------------------------------------------------------------------------------------------------------------------------------\n";
 
 		for (backup in Map.valsDesc(backups)) {
-			body #= "" # Nat.toText(backup.id) # "\t\t"
-				# formatTime(backup.startTime) # "\t\t"
-				# formatSize(backup.size, ["b", "B"]) # "\t"
-				# formatDuration(backup.endTime - backup.startTime) # "\t\t"
-				# Nat.toText(backup.chunkRefs.size()) # "\t\t"
-				# "#" # Nat.toText(backup.biggestChunk.index) # " - " # formatSize(backup.biggestChunk.size, ["b", "B"]) # "\t"
+			body #= addGap(Nat.toText(backup.id), 2)
+				# addGap(formatTime(backup.startTime), 4)
+				# addGap(formatSize(backup.size, ["b", "B"]), 2)
+				# addGap(formatDuration(backup.endTime - backup.startTime), 2)
+				# addGap(Nat.toText(backup.chunkRefs.size()), 2)
+				# addGap("#" # Nat.toText(backup.biggestChunk.index) # " - " # formatSize(backup.biggestChunk.size, ["b", "B"]), 3)
 				# backup.tag
 				# "\n";
 		};
