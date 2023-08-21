@@ -17,7 +17,7 @@ import Backup "mo:backup";
 
 var userNames = Buffer.Buffer<Text>(0); // example data
 
-let backupState = Backup.init(null);
+stable let backupState = Backup.init(null);
 let backupManager = Backup.BackupManager(backupState);
 
 // customize to your needs...
