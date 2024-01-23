@@ -19,8 +19,11 @@ import DateTime "mo:motoko-datetime/DateTime";
 import LinkedList "mo:linked-list";
 import Map "mo:map/Map";
 import HttpTypes "mo:http-types";
+import MemoryRegion "mo:memory-region/MemoryRegion";
 
-actor class BackupCanister(whitelist : [Principal]) {
+import Types "./types";
+
+actor class BackupCanister(whitelist : [Principal], config : Types.Config) {
 	type BackupId = Nat;
 	type Chunk = Blob;
 
@@ -49,12 +52,9 @@ actor class BackupCanister(whitelist : [Principal]) {
 	};
 
 	stable var curBackupId = 0;
-	stable var curOffset = 0;
-	stable var totalSize = 0;
-	stable var backups = Map.new<BackupId, Backup>(Map.nhash);
+	stable var backups = Map.new<BackupId, Backup>();
+	stable var memoryRegion = MemoryRegion.new();
 
-	let PAGE_SIZE = 65536; // 64KB
-	let GROW_PAGES = 512 : Nat64; // 32MB
 	let uploadingBackups = TrieMap.TrieMap<BackupId, UploadingBackup>(Nat.equal, func x = Text.hash(Nat.toText(x)));
 
 	/////////////////////////
@@ -70,21 +70,21 @@ actor class BackupCanister(whitelist : [Principal]) {
 	};
 
 	func _storeChunk(chunk : Blob) : ChunkRef {
-		let pages = Nat64.toNat(ExperimentalStableMemory.size());
-		if (pages * PAGE_SIZE < curOffset + chunk.size()) {
-			let beforePages = ExperimentalStableMemory.grow(GROW_PAGES);
-			if (beforePages == 0xFFFF_FFFF_FFFF_FFFF) {
-				Debug.trap("Cannot grow stable memory");
-			};
-		};
-
-		let offset = curOffset;
-		ExperimentalStableMemory.storeBlob(Nat64.fromNat(offset), chunk);
-		curOffset += chunk.size();
+		let offset = MemoryRegion.addBlob(memoryRegion, chunk);
 
 		return {
 			offset;
 			size = chunk.size();
+		};
+	};
+
+	func _removeExtraBackups() {
+		if (Map.size(backups) >= config.maxBackups) {
+			let ?(backupId, backup) = Map.popFront(backups, Map.nhash) else return;
+
+			for (chunkRef in backup.chunkRefs.vals()) {
+				MemoryRegion.deallocate(memoryRegion, chunkRef.offset, chunkRef.size);
+			};
 		};
 	};
 
@@ -103,6 +103,8 @@ actor class BackupCanister(whitelist : [Principal]) {
 			startTime = Time.now();
 			chunks = LinkedList.LinkedList<Blob>();
 		});
+
+		_removeExtraBackups();
 
 		backupId;
 	};
@@ -152,7 +154,6 @@ actor class BackupCanister(whitelist : [Principal]) {
 			biggestChunk = biggestChunk;
 		});
 
-		totalSize += size;
 
 		uploadingBackups.delete(backupId);
 	};
@@ -228,11 +229,18 @@ actor class BackupCanister(whitelist : [Principal]) {
 		};
 	};
 
+	func getTotalSize() : Nat {
+		var res = 0;
+		for (backup in Map.vals(backups)) {
+			res += backup.size;
+		};
+		res;
+	};
+
 	public query func http_request(request : HttpTypes.Request) : async HttpTypes.Response {
 		var body = "";
 		body #= "Total backups:\t\t" # Nat.toText(Map.size(backups)) # "\n\n";
-		body #= "Total size:\t\t" # formatSize(totalSize, ["b", "B"]) # "\n\n";
-		body #= "Allocated memory:\t" # formatSize(Prim.rts_memory_size(), ["b", "B"]) # "\n\n";
+		body #= "Total size:\t\t" # formatSize(getTotalSize(), ["b", "B"]) # "\n\n";
 		body #= "Cycles balance:\t\t" # formatSize(ExperimentalCycles.balance(), ["cycles", "C"]) # "\n\n";
 		body #= "\n\n\n";
 		body #= addGap("ID", 2) # addGap("Start Time", 4) # addGap("Size", 2) # addGap("Duration", 2) # addGap("Chunks", 2) # addGap("Biggest Chunk", 3) # "Tag\n";

@@ -18,7 +18,7 @@ import Backup "mo:backup";
 var userNames = Buffer.Buffer<Text>(0); // example data
 
 stable let backupState = Backup.init(null);
-let backupManager = Backup.BackupManager(backupState);
+let backupManager = Backup.BackupManager(backupState, {maxBackups = 10}); // retain only the latest 10 backups (set to 0 to retain all backups)
 
 // customize to your needs...
 type BackupChunk = {

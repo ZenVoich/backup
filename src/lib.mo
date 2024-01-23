@@ -3,6 +3,7 @@ import Debug "mo:base/Debug";
 import Timer "mo:base/Timer";
 import ExperimentalCycles "mo:base/ExperimentalCycles";
 
+import Types "./types";
 import BackupCanister "./backup-canister";
 
 module {
@@ -28,7 +29,7 @@ module {
 		});
 	};
 
-	public class BackupManager(state : State) {
+	public class BackupManager(state : State, config : Types.Config) {
 		var timerId = 0;
 
 		func _ensureBackupCanister() : async () {
@@ -55,7 +56,7 @@ module {
 					compute_allocation = null;
 					memory_allocation = null;
 				}
-			})([]);
+			})([], config);
 			Principal.fromActor(backupCanister);
 		};
 

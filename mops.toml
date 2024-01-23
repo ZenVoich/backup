@@ -7,11 +7,15 @@ keywords = [ "backup", "restore", "recovery", "auto-backup" ]
 license = "MIT"
 
 [dependencies]
-base = "0.9.7"
-map = "8.1.0"
+base = "0.10.4"
+map = "9.0.1"
 linked-list = "0.1.0"
-http-types = "1.0.0"
-motoko-datetime = "https://github.com/ByronBecker/motoko-datetime#v0.1.1"
+http-types = "1.0.1"
+motoko-datetime = "https://github.com/ByronBecker/motoko-datetime#v0.1.1@bda6139ec56d36731326727ae28510f1e1843f27"
+memory-region = "0.1.1"
 
 [dev-dependencies]
-test = "1.0.1"
+test = "1.2.0"
+
+[toolchain]
+wasmtime = "16.0.0"

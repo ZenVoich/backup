@@ -3,10 +3,11 @@ import Blob "mo:base/Blob";
 import {test; suite; skip} "mo:test/async";
 
 import Backup "../src";
+import {MemoryRegion} "mo:memory-region";
 
 await suite("backup", func() : async () {
 	let backupState = Backup.init(null);
-	let backupManager = Backup.BackupManager(backupState);
+	let backupManager = Backup.BackupManager(backupState, {maxBackups = 10});
 
 	// execution error, actor class configuration unsupported in interpreter
 	// execution error, Value.prim: cyclesBalance
