@@ -19,3 +19,4 @@ test = "1.2.0"
 
 [toolchain]
 wasmtime = "16.0.0"
+moc = "0.10.4"
