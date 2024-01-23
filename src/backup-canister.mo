@@ -11,7 +11,6 @@ import Int "mo:base/Int";
 import Char "mo:base/Char";
 import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
-import ExperimentalStableMemory "mo:base/ExperimentalStableMemory";
 import ExperimentalCycles "mo:base/ExperimentalCycles";
 import Prim "mo:prim";
 
@@ -170,7 +169,7 @@ actor class BackupCanister(whitelist : [Principal], config : Types.Config) {
 	};
 
 	func _chunkFromRef(ref : ChunkRef) : Chunk {
-		ExperimentalStableMemory.loadBlob(Nat64.fromNat(ref.offset), ref.size);
+		MemoryRegion.loadBlob(memoryRegion, ref.offset, ref.size);
 	};
 
 	/////////////////////////
