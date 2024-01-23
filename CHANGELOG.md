@@ -1,3 +1,6 @@
+## 2.0.1
+- Fixed critical bug when restoring from backup
+
 ## 2.0.0
 - Added support to retain only the latest N backups
 
