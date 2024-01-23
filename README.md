@@ -51,7 +51,7 @@ func _backup() : async () {
 backupManager.setTimer(#hours(1), _backup); // also add this line to postupgrade
 
 // restore a backup
-public shared ({caller}) func restore(backupId : Nat, chunkIndex : Nat) : async () {
+public shared ({caller}) func restore(backupId : Nat) : async () {
   assert(false); // restore disabled. If you want to restore data, remove this line, and re-deploy the canister.
   assert(Principal.isController(caller));
 
@@ -81,7 +81,7 @@ public shared ({caller}) func restore(backupId : Nat, chunkIndex : Nat) : async 
 1. Open backup canister dashboard and choose backup id that you want to restore
 2. Remove `assert(false);` from `restore` method
 3. Deploy your canister
-4. Call `dfx canister call <canister> restore`
+4. Call `dfx canister call <canister> restore <backup-id>`
 5. Return `assert(false);` to `restore` method
 3. Deploy your canister
 
