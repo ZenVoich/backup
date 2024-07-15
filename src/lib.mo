@@ -71,10 +71,10 @@ module {
 			actor(Principal.toText(canisterId)) : BackupCanister.BackupCanister;
 		};
 
-		public func setTimer(duration : Duration, backupFn : () -> async ()) {
+		public func setTimer<system>(duration : Duration, backupFn : () -> async ()) {
 			var backupInProgress = false;
 			cancelTimer();
-			timerId := Timer.recurringTimer(#nanoseconds(_toNanos(duration)), func() : async () {
+			timerId := Timer.recurringTimer<system>(#nanoseconds(_toNanos(duration)), func() : async () {
 				if (backupInProgress) {
 					return;
 				};
