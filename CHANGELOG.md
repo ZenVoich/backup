@@ -1,3 +1,7 @@
+## 3.0.0
+**Breaking Changes:**
+- Minimun required `base` version is 0.11.0
+
 ## 2.0.1
 - Fixed critical bug when restoring from backup
 
